@@ -3,24 +3,19 @@ package com.example.JavaSprint5_1BlackJack.entities;
 import com.example.JavaSprint5_1BlackJack.enums.Rank;
 import com.example.JavaSprint5_1BlackJack.enums.Suit;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Deck {
 
     private  List<Card> cards = new ArrayList<>();
-
-    public List<Card> getDeck() {
-        return List.copyOf(cards);
-    }
-
 
     public Card draw() {
         if (cards.isEmpty()) {
