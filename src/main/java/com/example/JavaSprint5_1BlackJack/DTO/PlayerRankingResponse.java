@@ -22,15 +22,5 @@ public record PlayerRankingResponse(
         Double winRate
 ) {
 
-        public static PlayerRankingResponse fromEntity(Player player, int position) {
-               double winRate = (player.getTotalGames()==null||player.getTotalGames()==0)?0.0:
-                       (double)player.getTotalWins()/player.getTotalGames();
-               return new PlayerRankingResponse(
-                       position,
-                       player.getPlayerName(),
-                       player.getTotalWins(),
-                       player.getTotalGames(),
-                       Math.round(winRate * 100.0) / 100.0
-               );
-        }
+
 }
