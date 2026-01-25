@@ -25,10 +25,16 @@ public class Player {
     private String playerName;
 
     @Column("total_win")
-    private Integer totalWins = 0;
+    private Integer totalWins;
 
     @Column("total_games")
-    private Integer totalGames =0;
+    private Integer totalGames;
+
+    public Player(String playerName) {
+        this.playerName = playerName;
+        this.totalWins = 0;
+        this.totalGames = 0;
+    }
 
     @Override
     public boolean equals(Object o) {
