@@ -4,14 +4,13 @@ import com.example.JavaSprint5_1BlackJack.DTO.CardResponse;
 import com.example.JavaSprint5_1BlackJack.DTO.GameResponse;
 import com.example.JavaSprint5_1BlackJack.entities.Card;
 import com.example.JavaSprint5_1BlackJack.entities.Game;
-import com.example.JavaSprint5_1BlackJack.entities.Hand;
 import com.example.JavaSprint5_1BlackJack.enums.GameStatus;
-import org.springframework.stereotype.Component;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+
 public class GameMapper {
 
     public GameResponse toResponse(Game game) {
