@@ -34,7 +34,7 @@ public class Hand {
         return calculateValue();
     }
 
-    private int calculateValue() {
+    public int calculateValue() {
 
         int sum = 0;
         int countAce = 0;

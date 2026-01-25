@@ -1,6 +1,7 @@
 package com.example.JavaSprint5_1BlackJack.entities;
 
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -19,12 +20,12 @@ public class Player {
     private Long playerId;
 
     @Setter
-    @NonNull
+    @NotBlank
     @Column("player_name") // 明确指定数据库字段名
     private String playerName;
 
     @Column("total_win")
-    private Integer totalWin = 0;
+    private Integer totalWins = 0;
 
     @Column("total_games")
     private Integer totalGames =0;
