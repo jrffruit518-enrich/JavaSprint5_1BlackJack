@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 
 public class GameMapper {
 
-    public GameResponse toResponse(Game game) {
+    public  static GameResponse toResponse(Game game) {
         // Map player's cards: Entity(Enum) -> DTO(String)
         List<CardResponse> playerCards = game.getPlayerHand().getCards().stream()
-                .map(this::mapToCardResponse)
+                .map(GameMapper::mapToCardResponse)
                 .collect(Collectors.toList());
 
         List<CardResponse> dealerCards;
@@ -31,7 +31,7 @@ public class GameMapper {
         } else {
             // Game over or other states: all dealer cards are revealed
             dealerCards = game.getDealerHand().getCards().stream()
-                    .map(this::mapToCardResponse)
+                    .map(GameMapper::mapToCardResponse)
                     .collect(Collectors.toList());
             dealerVisibleValue = game.getDealerHand().calculateValue();
         }
@@ -51,7 +51,7 @@ public class GameMapper {
     /**
      * Helper to map a single Card entity to CardResponse.
      */
-    private CardResponse mapToCardResponse(Card card) {
+    private static CardResponse mapToCardResponse(Card card) {
         // Convert Enum name to String for the DTO
         return new CardResponse(
                 card.getSuit().name(),
