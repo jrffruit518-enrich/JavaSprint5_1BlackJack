@@ -11,6 +11,7 @@ public class PlayerMapper {
                 (double)player.getTotalWins()/player.getTotalGames();
         return new PlayerResponse(
                 position,
+                player.getPlayerId(),
                 player.getPlayerName(),
                 player.getTotalWins(),
                 player.getTotalGames(),
