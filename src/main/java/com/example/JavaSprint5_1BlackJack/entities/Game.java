@@ -11,15 +11,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Objects;
 
+
 @Document(collection = "games")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Game {
     @Id
-    @EqualsAndHashCode.Include
     private String gameId;
 
     @NotNull(message = "Player information is mandatory")
@@ -28,22 +26,18 @@ public class Game {
     @NotBlank(message = "Player name information is mandatory")
     private String playerName;
 
-    @Builder.Default
     private Hand dealerHand = new Hand();
-
-    @Builder.Default
     private Hand playerHand = new Hand();
-
     @NotNull(message = "Deck cannot be null")
     private Deck deck;
-
-    @NotNull
-    @Builder.Default
     private GameStatus gameStatus = GameStatus.PREPARING;
-
-    @NotNull
-    @Builder.Default
     private GameResult gameResult =GameResult.UNDECIDED;
+
+    public Game(Long playerId, String playerName, Deck deck) {
+        this.playerId = playerId;
+        this.playerName = playerName;
+        this.deck = deck;
+    }
 
     public void initialDeal() {
         if (deck == null) {
@@ -79,6 +73,58 @@ public class Game {
             this.gameStatus = GameStatus.PLAYER_TURN;
         }
     }
+
+    public void applyHit() {
+
+        // Only allow HIT if it's player's turn
+        if (this.gameStatus != GameStatus.PLAYER_TURN) return;
+        // 1. From deck take a card and add to playerHand
+        playerHand.addCard(deck.draw());
+
+        // 2. Check if player busted (>21)
+        int value = playerHand.calculateValue();
+        // 3. Update gameStatus/gameResult if busted
+        if (value> 21) {
+            this.gameStatus = GameStatus.GAMEOVER;
+            this.gameResult = GameResult.DEALER_WON;
+        }
+
+    }
+
+    public void applyStand() {
+        if (this.gameStatus != GameStatus.PLAYER_TURN) return;
+
+        this.gameStatus = GameStatus.DEALER_TURN;
+
+        // 1. Dealer must draw until 17 or more
+        while (dealerHand.calculateValue() < 17) {
+            dealerHand.addCard(deck.draw());
+        }
+
+        // 2. Decide the outcome
+        determineWinner();
+
+        // 3. Mark game as finished
+        this.gameStatus = GameStatus.GAMEOVER;
+    }
+
+    private void determineWinner() {
+        int pValue = playerHand.calculateValue();
+        int dValue = dealerHand.calculateValue();
+
+        if (dValue > 21) {
+            // Dealer busted, player wins
+            this.gameResult = GameResult.PLAYER_WON;
+        } else if (pValue > dValue) {
+            this.gameResult = GameResult.PLAYER_WON;
+        } else if (pValue < dValue) {
+            this.gameResult = GameResult.DEALER_WON;
+        } else {
+            this.gameResult = GameResult.PUSH; // It's a tie
+        }
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
