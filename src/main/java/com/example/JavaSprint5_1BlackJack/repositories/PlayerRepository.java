@@ -8,9 +8,18 @@ import reactor.core.publisher.Mono;
 
 public interface PlayerRepository extends R2dbcRepository <Player, Long>{
 
-    @Query("SELECT COUNT(*) FROM player WHERE (total_win / total_games) > (:wins / :games)")
+    @Query("""
+SELECT COUNT(*)
+FROM players
+WHERE (total_win * 1.0 / NULLIF(total_games, 0))
+    > (:wins * 1.0 / NULLIF(:games, 0))
+""")
     Mono<Long> countByHigherWinRate(int wins, int games);
 
-    @Query("SELECT * FROM player ORDER BY (total_win / NULLIF(total_games, 0)) DESC")
+    @Query("""
+SELECT *
+FROM players
+ORDER BY (total_win * 1.0 / NULLIF(total_games, 0)) DESC
+""")
     Flux<Player> findAllOrderByWinRateDesc();
 }
