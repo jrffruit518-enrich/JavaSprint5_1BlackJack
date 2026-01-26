@@ -6,6 +6,9 @@ public record PlayerResponse(
         @Schema(description = "Position", example = "1")
         Integer position,
 
+        @Schema(description = "playerId", example = "3")
+        Long playerId,
+
         @Schema(description = "playerName", example = "PlayerOne")
         String playerName,
 
