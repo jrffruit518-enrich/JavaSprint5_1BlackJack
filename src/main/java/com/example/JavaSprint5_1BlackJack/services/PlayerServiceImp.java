@@ -3,6 +3,7 @@ package com.example.JavaSprint5_1BlackJack.services;
 import com.example.JavaSprint5_1BlackJack.DTO.PlayerResponse;
 import com.example.JavaSprint5_1BlackJack.DTO.PlayerRequest;
 import com.example.JavaSprint5_1BlackJack.entities.Player;
+import com.example.JavaSprint5_1BlackJack.enums.GameResult;
 import com.example.JavaSprint5_1BlackJack.exception.ResourceNotFoundException;
 import com.example.JavaSprint5_1BlackJack.mapper.PlayerMapper;
 import com.example.JavaSprint5_1BlackJack.repositories.PlayerRepository;
@@ -65,6 +66,23 @@ public class PlayerServiceImp implements PlayerService{
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Player with ID " + id + " not found.")))
                .flatMap(repository::delete);
 
+    }
+
+    @Override
+    public Mono<Player> updatePlayerStats(Long playerId, GameResult result) {
+        return repository.findById(playerId)
+                .flatMap(player -> {
+                    // Total games always increases by 1
+                    player.setTotalGames(player.getTotalGames() + 1);
+
+                    // Only increase wins if player actually won
+                    if (result == GameResult.PLAYER_WON) {
+                        player.setTotalWins(player.getTotalWins() + 1);
+                    }
+
+                    // Note: PUSH or DEALER_WON only affects totalGames
+                    return repository.save(player);
+                });
     }
 
 
