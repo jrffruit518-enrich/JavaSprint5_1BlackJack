@@ -18,9 +18,6 @@ public class Hand {
 
     private HandStatus handStatus = HandStatus.PLAYING;
 
-    public List<Card> getHand() {
-        return List.copyOf(cards);
-    }
 
     public void addCard(Card card) {
         if (handStatus != HandStatus.PLAYING) {
@@ -60,15 +57,21 @@ public class Hand {
     }
 
     public HandStatus updateStatus() {
+        // Terminal states must not be overridden
+        if (handStatus == HandStatus.STAND
+                || handStatus == HandStatus.BUST
+                || handStatus == HandStatus.BLACKJACK) {
+            return handStatus;
+        }
+
         int value = calculateValue();
 
         if (value > 21) {
-            this.handStatus = HandStatus.BUST;
+            handStatus = HandStatus.BUST;
         } else if (value == 21 && cards.size() == 2) {
-            this.handStatus = HandStatus.BLACKJACK;
-        } else {
-            this.handStatus = HandStatus.PLAYING;
+            handStatus = HandStatus.BLACKJACK;
         }
-        return this.handStatus;
+
+        return handStatus;
     }
 }
