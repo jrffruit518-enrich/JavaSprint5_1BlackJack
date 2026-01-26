@@ -12,7 +12,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Objects;
 
 @Document(collection = "games")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -45,6 +46,9 @@ public class Game {
     private GameResult gameResult =GameResult.UNDECIDED;
 
     public void initialDeal() {
+        if (deck == null) {
+            throw new IllegalStateException("Deck must be initialized before dealing cards");
+        }
         if (gameStatus!=GameStatus.PREPARING) {
             throw new IllegalStateException("Game has already started.");
         }
