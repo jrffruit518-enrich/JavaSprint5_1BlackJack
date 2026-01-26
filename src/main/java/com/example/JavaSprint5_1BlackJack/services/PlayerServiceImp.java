@@ -1,18 +1,15 @@
 package com.example.JavaSprint5_1BlackJack.services;
 
-import com.example.JavaSprint5_1BlackJack.DTO.PlayerRankingResponse;
+import com.example.JavaSprint5_1BlackJack.DTO.PlayerResponse;
 import com.example.JavaSprint5_1BlackJack.DTO.PlayerRequest;
 import com.example.JavaSprint5_1BlackJack.entities.Player;
 import com.example.JavaSprint5_1BlackJack.exception.ResourceNotFoundException;
 import com.example.JavaSprint5_1BlackJack.mapper.PlayerMapper;
 import com.example.JavaSprint5_1BlackJack.repositories.PlayerRepository;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -21,7 +18,7 @@ public class PlayerServiceImp implements PlayerService{
     private final PlayerRepository repository;
 
     @Override
-    public Mono<PlayerRankingResponse> createPlayer(PlayerRequest request) {
+    public Mono<PlayerResponse> createPlayer(PlayerRequest request) {
         Player player = new Player(request.playerName());
         return repository
                 .save(player)
@@ -29,7 +26,7 @@ public class PlayerServiceImp implements PlayerService{
     }
 
     @Override
-    public Mono<PlayerRankingResponse> findPlayerById(Long id) {
+    public Mono<PlayerResponse> findPlayerById(Long id) {
         return repository.findById(id)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Player with ID " + id + " not found.")))
                 .flatMap(this::enrichWithRank);
@@ -40,7 +37,7 @@ public class PlayerServiceImp implements PlayerService{
 
 
     @Override
-    public Flux<PlayerRankingResponse> findAllPlayers() {
+    public Flux<PlayerResponse> findAllPlayers() {
         return repository
                 .findAllOrderByWinRateDesc()
                 .index()
@@ -50,7 +47,7 @@ public class PlayerServiceImp implements PlayerService{
     }
 
     @Override
-    public Mono<PlayerRankingResponse> updatePlayerById(Long id, PlayerRequest request) {
+    public Mono<PlayerResponse> updatePlayerById(Long id, PlayerRequest request) {
 
         return repository
                 .findById(id)
@@ -64,11 +61,14 @@ public class PlayerServiceImp implements PlayerService{
 
     @Override
     public Mono<Void> deletePlayerById(Long id) {
-        return repository.deleteById(id);
+       return repository.findById(id)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Player with ID " + id + " not found.")))
+               .flatMap(repository::delete);
+
     }
 
 
-    private Mono<PlayerRankingResponse> enrichWithRank(Player player) {
+    private Mono<PlayerResponse> enrichWithRank(Player player) {
 
         if (player.getTotalGames() == null || player.getTotalGames() == 0) {
             return Mono.just(PlayerMapper.toResponse(player, 0));

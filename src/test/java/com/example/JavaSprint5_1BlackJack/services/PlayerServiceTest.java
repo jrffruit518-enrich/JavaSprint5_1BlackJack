@@ -1,6 +1,6 @@
 package com.example.JavaSprint5_1BlackJack.services;
 
-import com.example.JavaSprint5_1BlackJack.DTO.PlayerRankingResponse;
+import com.example.JavaSprint5_1BlackJack.DTO.PlayerResponse;
 import com.example.JavaSprint5_1BlackJack.DTO.PlayerRequest;
 import com.example.JavaSprint5_1BlackJack.entities.Player;
 import com.example.JavaSprint5_1BlackJack.exception.ResourceNotFoundException;
@@ -38,7 +38,7 @@ public class PlayerServiceTest {
         when(repository.save(any(Player.class))).thenReturn(Mono.just(savedPlayer));
 
         // 3. Execute and Verify using StepVerifier
-        Mono<PlayerRankingResponse> result = playerService.createPlayer(request);
+        Mono<PlayerResponse> result = playerService.createPlayer(request);
 
         StepVerifier.create(result)
                 .expectNextMatches(response -> {
@@ -61,7 +61,7 @@ public class PlayerServiceTest {
                 .thenReturn(Mono.error(new RuntimeException("Database Connection Failed")));
 
         // 3. Execute and Verify using StepVerifier
-        Mono<PlayerRankingResponse> result = playerService.createPlayer(request);
+        Mono<PlayerResponse> result = playerService.createPlayer(request);
 
         StepVerifier.create(result)
                 .expectErrorSatisfies(throwable -> {

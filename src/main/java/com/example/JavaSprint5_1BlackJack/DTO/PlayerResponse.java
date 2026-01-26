@@ -1,10 +1,8 @@
 package com.example.JavaSprint5_1BlackJack.DTO;
 
-import com.example.JavaSprint5_1BlackJack.entities.Player;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 
-public record PlayerRankingResponse(
+public record PlayerResponse(
         @Schema(description = "Position", example = "1")
         Integer position,
 
