@@ -11,6 +11,7 @@ import java.util.Objects;
 
 @Table("players") // R2DBC 的表映射注解
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Player {
