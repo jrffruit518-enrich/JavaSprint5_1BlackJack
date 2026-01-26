@@ -16,7 +16,7 @@ import java.util.Objects;
 public class Player {
 
     @Id
-    @Column("play_id")
+    @Column("player_id")
     private Long playerId;
 
     @Setter
