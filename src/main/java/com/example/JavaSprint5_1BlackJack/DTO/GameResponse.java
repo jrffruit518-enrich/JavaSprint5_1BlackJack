@@ -1,14 +1,8 @@
 package com.example.JavaSprint5_1BlackJack.DTO;
 
-import com.example.JavaSprint5_1BlackJack.entities.Deck;
-import com.example.JavaSprint5_1BlackJack.entities.Game;
-import com.example.JavaSprint5_1BlackJack.entities.Hand;
 import com.example.JavaSprint5_1BlackJack.enums.GameResult;
 import com.example.JavaSprint5_1BlackJack.enums.GameStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
 
 public record GameResponse(
