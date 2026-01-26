@@ -25,26 +25,27 @@ public class PlayerServiceImp implements PlayerService{
         Player player = new Player(request.playerName());
         return repository
                 .save(player)
-                .map(savedPlayer->{
-                    return PlayerMapper.toResponse(savedPlayer,0);
-                });
+                .flatMap(this::enrichWithRank);
     }
 
     @Override
     public Mono<PlayerRankingResponse> findPlayerById(Long id) {
-       return repository.findById(id)
-               .switchIfEmpty(Mono.error(new ResourceNotFoundException("Player with ID " + id + " not found.")))
-               .map(player -> {
-                   return PlayerMapper.toResponse(player,0);
-               });
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Player with ID " + id + " not found.")))
+                .flatMap(this::enrichWithRank);
     }
+
+
+
+
 
     @Override
     public Flux<PlayerRankingResponse> findAllPlayers() {
         return repository
-                .findAll()
-                .map(player ->{
-                    return PlayerMapper.toResponse(player,0);
+                .findAllOrderByWinRateDesc()
+                .index()
+                .map(tuple->{
+                    return PlayerMapper.toResponse(tuple.getT2(),tuple.getT1().intValue()+1);
                 });
     }
 
@@ -58,13 +59,25 @@ public class PlayerServiceImp implements PlayerService{
                     player.setPlayerName(request.playerName());
                     return repository.save(player);
                 })
-                .map(player ->{
-                    return PlayerMapper.toResponse(player,0);
-                });
+                .flatMap(this::enrichWithRank);
     }
 
     @Override
     public Mono<Void> deletePlayerById(Long id) {
         return repository.deleteById(id);
+    }
+
+
+    private Mono<PlayerRankingResponse> enrichWithRank(Player player) {
+
+        if (player.getTotalGames() == null || player.getTotalGames() == 0) {
+            return Mono.just(PlayerMapper.toResponse(player, 0));
+        }
+
+        return repository.countByHigherWinRate(player.getTotalWins(), player.getTotalGames())
+                .map(count -> {
+                    int currentPosition = count.intValue() + 1;
+                    return PlayerMapper.toResponse(player, currentPosition);
+                });
     }
 }
