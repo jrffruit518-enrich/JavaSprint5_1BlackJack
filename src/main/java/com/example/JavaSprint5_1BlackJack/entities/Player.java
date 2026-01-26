@@ -20,7 +20,6 @@ public class Player {
     @Column("player_id")
     private Long playerId;
 
-    @Setter
     @NotBlank
     @Column("player_name") // 明确指定数据库字段名
     private String playerName;
