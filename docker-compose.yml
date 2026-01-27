@@ -13,26 +13,26 @@ services:
     networks:
       - blackjack-network
     healthcheck:
-      # Use -proot without space to avoid warning
-      test: ["CMD", "mysqladmin", "ping", "-uroot", "-proot"]
+      # 即使密码报错，只要进程在就行
+      test: [ "CMD-SHELL", "mysqladmin ping -uroot -proot || exit 1" ]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10 # 增加重试次数，给数据库留出初始化时间
 
   # 2. MongoDB Reactive
   mongo-db:
     image: mongo:latest
     container_name: mongo-container
     ports:
-      - "27017:27017"
+      - "27018:27017"
     networks:
       - blackjack-network
     healthcheck:
-      # Use mongosh for latest mongo images
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      # 换成最通用的命令，检查 mongosh 是否能运行
+      test: [ "CMD-SHELL", "mongosh --eval 'db.adminCommand(\"ping\")' || exit 1" ]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
 
   # 3. Java Blackjack Application
   blackjack-app:
