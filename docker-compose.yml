@@ -1,0 +1,50 @@
+services:
+  # 1. Base de datos MySQL (R2DBC)
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: blackjack
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - blackjack-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Base de datos MongoDB (Reactive)
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-container
+    ports:
+      - "27017:27017"
+    networks:
+      - blackjack-network
+
+  # 3. Aplicación Java Blackjack
+  blackjack-app:
+    build: .
+    container_name: blackjack-api
+    ports:
+      - "8080:8080"
+    environment:
+      # Sobrescribimos las variables de entorno del Dockerfile para que coincidan con los servicios
+      - SPRING_R2DBC_URL=r2dbc:mysql://mysql-container:3306/blackjack
+      - SPRING_R2DBC_USERNAME=root
+      - SPRING_R2DBC_PASSWORD=root
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo-container:27017/blackjack
+    depends_on:
+      mysql-db:
+        condition: service_healthy # Espera a que MySQL esté listo
+      mongo-db:
+        condition: service_started
+    networks:
+      - blackjack-network
+
+networks:
+  blackjack-network:
+    driver: bridge

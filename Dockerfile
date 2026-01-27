@@ -1,5 +1,5 @@
 # Stage 1: Build (Optional, or just use the pre-built jar)
-FROM openjdk:23-jdk-slim
+FROM eclipse-temurin:23-jdk-alpine
 WORKDIR /app
 
 # Copy the jar file from the target folder
