@@ -6,13 +6,14 @@ services:
     image: mysql:8.0
     container_name: mysql-container
     ports:
-      - "3307:3306"  # 宿主机访问 3307，容器内部仍是 3306
+      - "3307:3306"  # Local access via 3307, internal via 3306
     environment:
       MYSQL_DATABASE: blackjack
       MYSQL_ROOT_PASSWORD: root
     networks:
       - blackjack-network
     healthcheck:
+      # Use -proot without space to avoid warning
       test: ["CMD", "mysqladmin", "ping", "-uroot", "-proot"]
       interval: 10s
       timeout: 5s
@@ -27,18 +28,20 @@ services:
     networks:
       - blackjack-network
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      # Use mongosh for latest mongo images
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # 3. Java Blackjack 应用
+  # 3. Java Blackjack Application
   blackjack-app:
     build: .
     container_name: blackjack-api
     ports:
       - "8080:8080"
     environment:
+      # Connection strings using container names
       - SPRING_R2DBC_URL=r2dbc:mysql://mysql-container:3306/blackjack?allowPublicKeyRetrieval=true&useSSL=false
       - SPRING_R2DBC_USERNAME=root
       - SPRING_R2DBC_PASSWORD=root
