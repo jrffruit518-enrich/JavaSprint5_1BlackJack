@@ -15,7 +15,8 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
-import static reactor.core.publisher.Mono.when;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PlayerServiceTest {
@@ -75,7 +76,11 @@ public class PlayerServiceTest {
     @Test
     void findPlayerById_Success() {
         Player player = new Player(1L, "Alice", 10, 20);
+
+        // Stub findById
         when(repository.findById(1L)).thenReturn(Mono.just(player));
+        // MUST stub the ranking query used in enrichWithRank
+        when(repository.countByHigherWinRate(anyInt(), anyInt())).thenReturn(Mono.just(5L));
 
         StepVerifier.create(playerService.findPlayerById(1L))
                 .expectNextMatches(resp -> resp.playerName().equals("Alice"))
@@ -94,17 +99,17 @@ public class PlayerServiceTest {
     @Test
     void findAllPlayers_Success() {
         Player p1 = new Player(1L, "Alice", 5, 10);
-        Player p2 = new Player(2L, "Bob", 3, 10);
-        when(repository.findAll()).thenReturn(Flux.just(p1, p2));
+        // MATCH the method name used in PlayerServiceImp.java:44
+        when(repository.findAllOrderByWinRateDesc()).thenReturn(Flux.just(p1));
 
         StepVerifier.create(playerService.findAllPlayers())
-                .expectNextCount(2) // 验证发出了两个元素
+                .expectNextCount(1)
                 .verifyComplete();
     }
 
     @Test
     void findAllPlayers_Failure_DatabaseError() {
-        when(repository.findAll()).thenReturn(Flux.error(new RuntimeException("DB Error")));
+        when(repository.findAllOrderByWinRateDesc()).thenReturn(Flux.error(new RuntimeException("DB Error")));
 
         StepVerifier.create(playerService.findAllPlayers())
                 .expectError(RuntimeException.class)
@@ -136,20 +141,25 @@ public class PlayerServiceTest {
 
     @Test
     void deletePlayerById_Success() {
-        // deleteById returns Mono<Void>, which translates to Mono.empty() in testing
-        when(repository.deleteById(1L)).thenReturn(Mono.empty());
+        Player player = new Player(1L, "Alice", 0, 0);
+
+        when(repository.findById(1L)).thenReturn(Mono.just(player));
+
+        when(repository.delete(any(Player.class))).thenReturn(Mono.empty());
 
         StepVerifier.create(playerService.deletePlayerById(1L))
-                .verifyComplete(); // 验证是否发出了完成信号
+                .verifyComplete();
     }
 
     @Test
-    void deletePlayerById_Failure_DatabaseError() {
-        when(repository.deleteById(1L)).thenReturn(Mono.error(new RuntimeException("Delete failed")));
+    void deletePlayerById_Failure_NotFound() {
+
+        when(repository.findById(1L)).thenReturn(Mono.empty());
 
         StepVerifier.create(playerService.deletePlayerById(1L))
-                .expectError(RuntimeException.class)
+                .expectError(ResourceNotFoundException.class)
                 .verify();
+
     }
 
 
