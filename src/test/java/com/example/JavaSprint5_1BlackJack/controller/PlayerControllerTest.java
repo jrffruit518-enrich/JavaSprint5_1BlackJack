@@ -3,6 +3,7 @@ package com.example.JavaSprint5_1BlackJack.controller;
 
 import com.example.JavaSprint5_1BlackJack.DTO.PlayerRequest;
 import com.example.JavaSprint5_1BlackJack.DTO.PlayerResponse;
+import com.example.JavaSprint5_1BlackJack.controllers.PlayerController;
 import com.example.JavaSprint5_1BlackJack.exception.ResourceNotFoundException;
 import com.example.JavaSprint5_1BlackJack.services.PlayerService;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ import reactor.core.publisher.Mono;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-@WebFluxTest(PlayerControllerTest.class)
+@WebFluxTest(PlayerController.class)
 public class PlayerControllerTest {
 
     @Autowired
@@ -30,13 +31,13 @@ public class PlayerControllerTest {
     @Test
     void createPlayer_Success() {
         PlayerRequest request = new PlayerRequest("JohnDoe");
-        PlayerResponse response = new PlayerResponse(1, "JohnDoe", 0, 0, 0.0);
+        PlayerResponse response = new PlayerResponse(1, 1L, "JohnDoe", 0, 0, 0.0);
 
-        Mockito.when(playerService.createPlayer(any(PlayerRequest.class)))
+        Mockito.when(playerService.createPlayer(Mockito.any()))
                 .thenReturn(Mono.just(response));
 
         webTestClient.post()
-                .uri("/blackjack/players")
+                .uri("/blackjack/player")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -51,7 +52,7 @@ public class PlayerControllerTest {
         PlayerRequest request = new PlayerRequest("");
 
         webTestClient.post()
-                .uri("/blackjack/players")
+                .uri("/blackjack/player")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -63,13 +64,13 @@ public class PlayerControllerTest {
     @Test
     void findPlayerById_Success() {
         Long id = 1L;
-        PlayerResponse response = new PlayerResponse(1, "JohnDoe", 0, 0, 0.0);
+        PlayerResponse response = new PlayerResponse(1, 1L,"JohnDoe", 0, 0, 0.0);
 
         Mockito.when(playerService.findPlayerById(id))
                 .thenReturn(Mono.just(response));
 
         webTestClient.get()
-                .uri("/blackjack/players/{id}", id)
+                .uri("/blackjack/player/{id}", id)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -83,7 +84,7 @@ public class PlayerControllerTest {
                 .thenReturn(Mono.error(new ResourceNotFoundException("Player not found")));
 
         webTestClient.get()
-                .uri("/blackjack/players/{id}", id)
+                .uri("/blackjack/player/{id}", id)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -92,13 +93,14 @@ public class PlayerControllerTest {
 
     @Test
     void findAllPlayers_Success() {
-        PlayerResponse p1 = new PlayerResponse(1, "A", 10, 20, 0.5);
-        PlayerResponse p2 = new PlayerResponse(2, "B", 5, 20, 0.25);
+
+        PlayerResponse p1 = new PlayerResponse(1, 1L, "A", 10, 20, 0.5);
+        PlayerResponse p2 = new PlayerResponse(2, 2L, "B", 5, 20, 0.25);
 
         Mockito.when(playerService.findAllPlayers()).thenReturn(Flux.just(p1, p2));
 
         webTestClient.get()
-                .uri("/blackjack/players")
+                .uri("/blackjack/player/ranking")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(PlayerResponse.class)
@@ -111,13 +113,13 @@ public class PlayerControllerTest {
     void updatePlayer_Success() {
         Long id = 1L;
         PlayerRequest request = new PlayerRequest("NewName");
-        PlayerResponse response = new PlayerResponse(1, "NewName", 0, 0, 0.0);
+        PlayerResponse response = new PlayerResponse(1, 1L,"NewName", 0, 0, 0.0);
 
         Mockito.when(playerService.updatePlayerById(eq(id), any(PlayerRequest.class)))
                 .thenReturn(Mono.just(response));
 
         webTestClient.put()
-                .uri("/blackjack/players/{id}", id)
+                .uri("/blackjack/player/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -135,7 +137,7 @@ public class PlayerControllerTest {
                 .thenReturn(Mono.error(new ResourceNotFoundException("Not found")));
 
         webTestClient.put()
-                .uri("/blackjack/players/{id}", id)
+                .uri("/blackjack/player/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -150,7 +152,7 @@ public class PlayerControllerTest {
         Mockito.when(playerService.deletePlayerById(id)).thenReturn(Mono.empty());
 
         webTestClient.delete()
-                .uri("/blackjack/players/{id}", id)
+                .uri("/blackjack/player/{id}", id)
                 .exchange()
                 .expectStatus().isNoContent();
     }
@@ -163,7 +165,7 @@ public class PlayerControllerTest {
                 .thenReturn(Mono.error(new RuntimeException("DB Error")));
 
         webTestClient.delete()
-                .uri("/blackjack/players/{id}", id)
+                .uri("/blackjack/player/{id}", id)
                 .exchange()
                 .expectStatus().is5xxServerError();
     }
