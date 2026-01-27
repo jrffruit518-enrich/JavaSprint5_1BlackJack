@@ -29,7 +29,7 @@ services:
       - blackjack-network
     healthcheck:
       # Use mongosh for latest mongo images
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,6 +42,7 @@ services:
       - "8080:8080"
     environment:
       # Connection strings using container names
+      - SPRING_PROFILES_ACTIVE=docker  # 关键：确保加载 Docker 环境的配置
       - SPRING_R2DBC_URL=r2dbc:mysql://mysql-container:3306/blackjack?allowPublicKeyRetrieval=true&useSSL=false
       - SPRING_R2DBC_USERNAME=root
       - SPRING_R2DBC_PASSWORD=root

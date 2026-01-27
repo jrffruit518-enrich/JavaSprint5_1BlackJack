@@ -25,6 +25,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,19 +43,27 @@ public class GameServiceTest {
 
     @Test
     void createGame_Success() {
-
+        // Prepare test data
         Long pId = 1L;
         PlayerResponse mockResponse = new PlayerResponse(1, pId, "PlayerOne", 0, 0, 0.0);
-
         GameRequest request = new GameRequest(pId, "PlayerOne");
 
+        // Mock player lookup
         when(playerService.findPlayerById(pId)).thenReturn(Mono.just(mockResponse));
 
+        // Use lenient() because updatePlayerStats is only called if the initial deal is a Blackjack.
+        // This prevents UnnecessaryStubbingException when the deck is random.
+        Mockito.lenient().when(playerService.updatePlayerStats(anyLong(), any()))
+                .thenReturn(Mono.empty());
+
+        // Mock repository save
         when(gameRepository.save(any(Game.class))).thenAnswer(i -> Mono.just(i.getArgument(0)));
 
+        // Execute and verify
         StepVerifier.create(gameService.createGame(request))
                 .assertNext(response -> {
                     assertEquals("PlayerOne", response.playerName());
+                    // Additional assertions can be added here
                 })
                 .verifyComplete();
     }
