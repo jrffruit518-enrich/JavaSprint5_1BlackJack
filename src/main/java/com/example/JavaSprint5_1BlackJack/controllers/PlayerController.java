@@ -4,6 +4,7 @@ import com.example.JavaSprint5_1BlackJack.DTO.PlayerResponse;
 import com.example.JavaSprint5_1BlackJack.DTO.PlayerRequest;
 import com.example.JavaSprint5_1BlackJack.services.PlayerService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -13,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @Validated
 @RestController
-@RequestMapping("/blackjack/players")
+@RequestMapping("/blackjack/player")
 @AllArgsConstructor
 public class PlayerController {
 
@@ -30,18 +31,18 @@ public class PlayerController {
 
     @GetMapping("/{id}")
     public Mono<PlayerResponse> findPlayerById(
-            @PathVariable Long id) {
+            @PathVariable @Positive Long id) {
         return playerService.findPlayerById(id);
     }
 
-    @GetMapping
+    @GetMapping("/ranking")
     public Flux<PlayerResponse> findAllPlayers() {
         return playerService.findAllPlayers();
     }
 
     @PutMapping("/{id}")
     public Mono<PlayerResponse> updatePlayerById(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @RequestBody @Valid PlayerRequest request) {
        return playerService.updatePlayerById(id,request);
 
@@ -50,7 +51,7 @@ public class PlayerController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deletePlayerById(
-            @PathVariable Long id
+            @PathVariable @Positive Long id
     ) {
         return playerService.deletePlayerById(id);
     }
