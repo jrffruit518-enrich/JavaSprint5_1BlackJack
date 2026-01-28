@@ -1,60 +1,69 @@
-version: "3.9"
 
-services:
-  # 1. MySQL R2DBC
-  mysql-db:
-    image: mysql:8.0
-    container_name: mysql-container
-    ports:
-      - "3307:3306"  # Local access via 3307, internal via 3306
-    environment:
-      MYSQL_DATABASE: blackjack
-      MYSQL_ROOT_PASSWORD: root
-    networks:
-      - blackjack-network
-    healthcheck:
-      # 即使密码报错，只要进程在就行
-      test: [ "CMD-SHELL", "mysqladmin ping -uroot -proot || exit 1" ]
-      interval: 10s
-      timeout: 10s
-      retries: 10 # 增加重试次数，给数据库留出初始化时间
+  version: "3.9"
 
-  # 2. MongoDB Reactive
-  mongo-db:
-    image: mongo:latest
-    container_name: mongo-container
-    ports:
-      - "27018:27017"
-    networks:
-      - blackjack-network
-    healthcheck:
-      # 换成最通用的命令，检查 mongosh 是否能运行
-      test: [ "CMD-SHELL", "mongosh --eval 'db.adminCommand(\"ping\")' || exit 1" ]
-      interval: 10s
-      timeout: 10s
-      retries: 10
+  services:
+    # 1. MySQL R2DBC
+    mysql-db:
+      image: mysql:8.0
+      container_name: mysql-container
+      ports:
+        - "3307:3306"
+      environment:
+        MYSQL_DATABASE: blackjack
+        MYSQL_ROOT_PASSWORD: root
+      networks:
+        - blackjack-network
+      volumes:
+        - mysql_data:/var/lib/mysql  # Persist MySQL data
+      healthcheck:
+        test: [ "CMD-SHELL", "mysqladmin ping -uroot -proot || exit 1" ]
+        interval: 10s
+        timeout: 10s
+        retries: 10
 
-  # 3. Java Blackjack Application
-  blackjack-app:
-    build: .
-    container_name: blackjack-api
-    ports:
-      - "8080:8080"
-    environment:
-      # Connection strings using container names
-      - SPRING_PROFILES_ACTIVE=docker  # 关键：确保加载 Docker 环境的配置
-      - SPRING_R2DBC_URL=r2dbc:mysql://mysql-container:3306/blackjack?allowPublicKeyRetrieval=true&useSSL=false
-      - SPRING_R2DBC_USERNAME=root
-      - SPRING_R2DBC_PASSWORD=root
-      - SPRING_DATA_MONGODB_URI=mongodb://mongo-container:27017/blackjack
-    depends_on:
-      mysql-db:
-        condition: service_healthy
-      mongo-db:
-        condition: service_healthy
-    networks:
-      - blackjack-network
+    # 2. MongoDB Reactive
+    mongo-db:
+      image: mongo:latest
+      container_name: mongo-container
+      ports:
+        - "27018:27017"
+      networks:
+        - blackjack-network
+      volumes:
+        - mongo_data:/data/db        # Persist MongoDB data
+      healthcheck:
+        test: [ "CMD-SHELL", "mongosh --eval 'db.adminCommand(\"ping\")' || exit 1" ]
+        interval: 10s
+        timeout: 10s
+        retries: 10
 
-networks:
-  blackjack-network:
-    driver: bridge
+    # 3. Java Blackjack Application
+    blackjack-app:
+      image: javasprint5_1blackjack-blackjack-app
+      container_name: blackjack-api
+      stdin_open: true
+      tty: true
+      ports:
+        - "8080:8080"
+      environment:
+        - SPRING_PROFILES_ACTIVE=docker
+        - SPRING_R2DBC_URL=r2dbc:mysql://mysql-container:3306/blackjack?allowPublicKeyRetrieval=true&useSSL=false
+        - SPRING_R2DBC_USERNAME=root
+        - SPRING_R2DBC_PASSWORD=root
+        - SPRING_DATA_MONGODB_URI=mongodb://mongo-container:27017/blackjack
+      depends_on:
+        mysql-db:
+          condition: service_healthy
+        mongo-db:
+          condition: service_healthy
+      networks:
+        - blackjack-network
+
+
+  volumes:
+    mysql_data:
+    mongo_data:
+
+  networks:
+    blackjack-network:
+      driver: bridge
