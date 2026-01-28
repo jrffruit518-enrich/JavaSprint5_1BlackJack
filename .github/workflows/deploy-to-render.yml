@@ -1,10 +1,9 @@
-
 name: Deploy Blackjack to Render
 
 on:
   push:
     branches:
-      - main
+      - main  # push main 分支触发
 
 jobs:
   build-and-deploy:
@@ -12,10 +11,11 @@ jobs:
 
     steps:
 
+      # 1️⃣ Checkout 代码
       - name: Checkout repository
         uses: actions/checkout@v3
 
-
+      # 2️⃣ 登录 GHCR
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -23,22 +23,22 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-
+      # 3️⃣ Build Docker 镜像
       - name: Build Docker image
         run: |
           docker build -t javasprint5_1blackjack-blackjack-app:latest .
 
-
+      # 4️⃣ Tag Docker 镜像为 latest
       - name: Tag Docker image for GHCR
         run: |
           docker tag javasprint5_1blackjack-blackjack-app:latest ghcr.io/${{ github.repository_owner }}/javasprint5_1blackjack:latest
 
-
+      # 5️⃣ Push 镜像到 GHCR（覆盖原 latest）
       - name: Push Docker image to GHCR
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/javasprint5_1blackjack:latest
 
-
+      # 6️⃣ Deploy Render
       - name: Deploy to Render
         env:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
