@@ -35,7 +35,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
 
       # 5️⃣ Build & push Docker 镜像
       - name: Build and Push Docker image
@@ -59,15 +59,15 @@ jobs:
           docker push $IMAGE_LATEST
           docker push $IMAGE_SHA
 
-      # 6️⃣ Deploy 到 Render
+      # 6️⃣ Deploy 到 Render，启用 H2 profile
       - name: Deploy to Render
         env:
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          echo "Triggering Render deployment..."
+          echo "Triggering Render deployment with H2 profile..."
           curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             -H "Accept: application/json" \
             -H "Content-Type: application/json" \
-            -d '{"clearCache": true}'
+            -d '{"clearCache": "clear", "env": {"SPRING_PROFILES_ACTIVE":"h2"}}'
