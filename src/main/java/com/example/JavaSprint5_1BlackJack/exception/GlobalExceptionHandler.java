@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebExchange;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -43,11 +44,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleAll(Exception ex) {
-        // This is the key: Print the full stack trace to Render/Local logs
-        log.error("Unhandled exception caught by GlobalExceptionHandler: ", ex);
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleAll(Exception ex, ServerWebExchange exchange) {
+        String path = exchange.getRequest().getURI().getPath();
+
+        // Check if the request is for Swagger or API docs
+        if (path.contains("swagger") || path.contains("v3/api-docs")) {
+            // Log it as debug and let Spring handle it
+            log.debug("Swagger resource requested, bypassing GlobalExceptionHandler: {}", path);
+            throw new RuntimeException(ex); // Re-throw to allow default handling
+        }
+
+        log.error("Unhandled exception caught: ", ex);
         var error = new ApiErrorResponse(500, "Internal error", LocalDateTime.now());
         return ResponseEntity.internalServerError().body(error);
     }
