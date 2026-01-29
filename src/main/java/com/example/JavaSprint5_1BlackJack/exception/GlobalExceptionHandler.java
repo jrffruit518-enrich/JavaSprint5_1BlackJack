@@ -45,8 +45,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleAll(Exception ex) {
-        log.error("Unhandled exception", ex);
-        var error = new ApiErrorResponse(500, "Internal server error - please contact support", LocalDateTime.now());
+        // This is the key: Print the full stack trace to Render/Local logs
+        log.error("Unhandled exception caught by GlobalExceptionHandler: ", ex);
+
+        var error = new ApiErrorResponse(500, "Internal error", LocalDateTime.now());
         return ResponseEntity.internalServerError().body(error);
     }
 
