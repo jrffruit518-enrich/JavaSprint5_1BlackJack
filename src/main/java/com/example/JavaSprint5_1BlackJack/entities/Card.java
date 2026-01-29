@@ -4,18 +4,19 @@ import com.example.JavaSprint5_1BlackJack.enums.Rank;
 import com.example.JavaSprint5_1BlackJack.enums.Suit;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.NoArgsConstructor;
+
 
 import java.util.Objects;
 
-
+@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public class Card {
 
-    private final Suit suit;
+    private  Suit suit;
 
-    private final Rank rank;
+    private  Rank rank;
 
 
     @Override
